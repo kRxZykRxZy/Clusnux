@@ -361,7 +361,7 @@ class AdminApp(tk.Tk):
                 for _iface, counters in net_info.items():
                     try:
                         bytes_total += float(counters.get("bytes_sent", 0)) + float(counters.get("bytes_recv", 0))
-                    except Exception:  # noqa: BLE001
+                    except (TypeError, ValueError, AttributeError, KeyError):
                         continue
                 # simple scale heuristic
                 srv.net = min(1.0, bytes_total / (1024 * 1024 * 10))
