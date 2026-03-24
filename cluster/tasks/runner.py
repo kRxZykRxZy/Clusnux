@@ -47,7 +47,8 @@ async def run_command(cmd: str, websocket):
         await websocket.send(json.dumps({
             "task": "cmd_error",
             "pid": pid,
-            "error": "command_failed"
+            "error": "command_failed",
+            "detail": str(exc)
         }))
     finally:
         registry.pop_process(pid)
@@ -80,4 +81,3 @@ async def stop_command(pid: int, websocket):
         "status": status,
         "returncode": process.returncode
     }))
-

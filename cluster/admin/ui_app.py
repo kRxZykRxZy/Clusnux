@@ -59,9 +59,11 @@ async def recv_loop(state: AppState, log_lines: int = 400):
                 state.nodes[ws_url] = node
                 if not state.active_node:
                     state.active_node = ws_url
-    except Exception as exc:  # noqa: BLE001
-        state.log.append(f"[error] receive loop: {exc}")
+    except websockets.exceptions.WebSocketException as exc:
+        state.log.append(f"[error] receive loop websocket error: {exc}")
         state.status = "error"
+    except asyncio.CancelledError:
+        raise
 
 
 async def connect(state: AppState):

@@ -120,8 +120,10 @@ class WSManager:
                     self.log(f"[{url}] non-JSON message: {message}")
                     continue
                 self.on_message(url, data)
-        except Exception as exc:  # noqa: BLE001
-            self.log(f"[{url}] connection error: {exc}")
+        except websockets.exceptions.WebSocketException as exc:
+            self.log(f"[{url}] websocket error: {exc}")
+        except asyncio.CancelledError:
+            raise
         finally:
             self.on_disconnect(url)
 
@@ -278,6 +280,7 @@ class AdminApp(tk.Tk):
         self.samba_share_var = tk.StringVar()
         self.samba_user_var = tk.StringVar()
         self.samba_pass_var = tk.StringVar()
+        self.storage_all_var = tk.BooleanVar(value=False)
         rows = [
             ("Docker image", self.docker_var),
             ("mergerfs source", self.merger_src_var),
@@ -289,7 +292,8 @@ class AdminApp(tk.Tk):
         for i, (label, var) in enumerate(rows):
             ttk.Label(form, text=label, style="TLabel").grid(row=i, column=0, sticky="w", pady=4)
             ttk.Entry(form, textvariable=var, width=48).grid(row=i, column=1, sticky="w")
-        ttk.Button(form, text="Push storage settings", style="Accent.TButton", command=self._push_storage).grid(row=len(rows), column=0, columnspan=2, pady=10, sticky="w")
+        ttk.Checkbutton(form, text="Apply to all connected servers", variable=self.storage_all_var, style="TCheckbutton").grid(row=len(rows), column=0, columnspan=2, sticky="w", pady=(8, 4))
+        ttk.Button(form, text="Push storage settings", style="Accent.TButton", command=self._push_storage).grid(row=len(rows)+1, column=0, columnspan=2, pady=10, sticky="w")
 
     def _build_tasks(self):
         wrapper = ttk.Frame(self.tab_tasks, style="Card.TFrame")
@@ -339,15 +343,28 @@ class AdminApp(tk.Tk):
             self._render_selected()
         elif task == "tasks":
             srv = self.state.ensure_server(url)
-            running = data.get("running", [])
-            srv.tasks = [ServerTask(name=str(proc.get("command", proc.get("pid", "task"))), status="running") for proc in running]
+            running = data.get("running", {})
+            srv.tasks = [ServerTask(name=str(pid), status=str(status)) for pid, status in running.items()]
             self.state.log(f"Tasks updated for {srv.node_id or url}")
             self._render_selected()
         elif task == "metrics":
             srv = self.state.ensure_server(url)
-            srv.cpu = float(data.get("cpu", 0.0))
-            srv.mem = float(data.get("mem", 0.0))
-            srv.net = float(data.get("net", 0.0))
+            cpu = float(data.get("cpu_percent", 0.0)) / 100.0
+            mem_info = data.get("memory", {})
+            disk_info = data.get("disk", {})
+            net_info = data.get("network", {}) or {}
+            srv.cpu = max(0.0, min(1.0, cpu))
+            srv.mem = float(mem_info.get("percent", 0.0)) / 100.0 if isinstance(mem_info, dict) else 0.0
+            srv.net = 0.0
+            if isinstance(net_info, dict):
+                bytes_total = 0
+                for _iface, counters in net_info.items():
+                    try:
+                        bytes_total += float(counters.get("bytes_sent", 0)) + float(counters.get("bytes_recv", 0))
+                    except Exception:  # noqa: BLE001
+                        continue
+                # simple scale heuristic
+                srv.net = min(1.0, bytes_total / (1024 * 1024 * 10))
             self._render_selected()
         elif task in {"cmd_started", "cmd_output", "cmd_complete", "cmd_error"}:
             self.state.log(f"[{url}] {task}: {data}")
@@ -443,8 +460,11 @@ class AdminApp(tk.Tk):
                 "SAMBA_PASS": srv.settings.samba_pass,
             },
         }
-        self.ws_manager.send(srv.ws_url, payload)
-        self.state.log(f"Sent storage/Docker config to {srv.ws_url}")
+        targets = self.state.ws_urls if self.storage_all_var.get() else [srv.ws_url]
+        for url in targets:
+            self.ws_manager.send(url, payload)
+        target_label = "all servers" if self.storage_all_var.get() else srv.ws_url
+        self.state.log(f"Sent storage/Docker config to {target_label}")
         self._refresh_logs()
 
     def _run_command(self):
@@ -472,7 +492,7 @@ class AdminApp(tk.Tk):
             return
         task = srv.tasks[selection[0]]
         if action == "stop":
-            payload = {"task": "stop", "role": self.role_var.get(), "pid": task.name}
+            payload = {"task": "stop", "role": self.role_var.get(), "pid": int(task.name)}
             self.ws_manager.send(srv.ws_url, payload)
             self.state.log(f"Sent stop for pid {task.name} on {srv.ws_url}")
         self._refresh_logs()
