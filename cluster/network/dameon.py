@@ -1,0 +1,36 @@
+import threading
+import time
+import json
+import subprocess
+from websocket import server
+
+class ClusterDaemon:
+    """ Network Daemon worker that runs a WebSocket server and handles HTTP-Requested cluster tasks. """
+
+    def __init__(self, host="0.0.0.0", port=8734):
+        self.host = host
+        self.port = port
+        self.ws_thread = None
+
+    def start_websocket_server(self):
+        """ Starts the WebSocket server in a separate thread. """
+        try:
+            print(f"[*] Starting WebSocket server on {self.host}:{self.port}")
+            server.run(str(self.port), self.host)
+        except Exception as e:
+            print(f"[!] WebSocket server failed: {e}")
+
+    def start_daemon(self):
+        """Starts the daemon with the WebSocket server as a worker."""
+        self.ws_thread = threading.Thread(target=self.start_websocket_server)
+        self.ws_thread.daemon = True  # Stops automatically if main program exits
+        self.ws_thread.start()
+        print("[*] WebSocket server thread started as daemon.")
+
+        """ Main loop, handles all task handling middleware and heartbeats. """
+        try:
+            while True:
+                # TODO: Implement main loop
+                time.sleep(5)
+        except KeyboardInterrupt:
+            print("\n[*] Daemon shutting down...")
