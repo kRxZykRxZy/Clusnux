@@ -37,11 +37,6 @@ class DaemonService:
         self.ws_thread.start()
         logger.info("WebSocket server thread started as daemon.")
 
-        if self.config.get("role") == "admin":
-            ui_port = self.config.get("ui_port", 8080)
-            self.ui_server = UIServer(host=self.host, port=ui_port)
-            self.ui_server.start()
-
     def join(self):
         """Join the websocket thread."""
         if self.ws_thread:

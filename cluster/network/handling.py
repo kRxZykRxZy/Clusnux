@@ -26,7 +26,8 @@ async def handle_request(data, websocket):
     """
     task = data.get("task")
     config = load_config()
-    role = (data.get("role") or "").lower() or config.get("role", "cluster")
+    requested_role = data.get("role")
+    role = (requested_role.lower() if requested_role else config.get("role", "cluster"))
 
     if role not in ALLOWED_ROLES:
         await websocket.send(json.dumps({"status": "error", "code": "unauthorized_role"}))

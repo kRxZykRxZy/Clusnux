@@ -1,7 +1,6 @@
 import os
 import socket
 from typing import Dict
-import socket
 import contextlib
 
 ALLOWED_ROLES = {"admin", "orchestrator", "cluster"}
@@ -28,8 +27,13 @@ def load_config() -> Dict:
         role = "cluster"
 
     advertise_ip = _detect_private_ip()
-    host = os.getenv("CLUSNUX_HOST", "")
-    bind_host = host if host else advertise_ip if role in {"cluster", "orchestrator"} else "0.0.0.0"
+    host_env = os.getenv("CLUSNUX_HOST", "")
+    if host_env:
+        bind_host = host_env
+    elif role in {"cluster", "orchestrator"}:
+        bind_host = advertise_ip
+    else:
+        bind_host = "0.0.0.0"
     return {
         "host": bind_host or "0.0.0.0",
         "port": int(os.getenv("CLUSNUX_PORT", "8734")),
