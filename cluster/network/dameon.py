@@ -2,7 +2,7 @@ import threading
 import time
 import json
 import subprocess
-from websocket import server as WebSocketServer
+from cluster.network.websocket import WebSocketServer
 
 class ClusterDaemon:
     """ Network Daemon worker that runs a WebSocket server and handles HTTP-Requested cluster tasks. """

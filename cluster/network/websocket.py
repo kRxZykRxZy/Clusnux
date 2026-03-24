@@ -1,9 +1,13 @@
 import asyncio
 import json
+import logging
 import websockets
-from handling import handle_request
+from cluster.network.handling import handle_request
 
-class server:
+logger = logging.getLogger(__name__)
+
+
+class WebSocketServer:
     """ The main websocket control system that handles all requests from administrators or orchestring servers. """
 
     def __init__(self, host="0.0.0.0", port=8734):
@@ -19,14 +23,15 @@ class server:
             async for message in websocket:
                 try:
                     data = json.loads(message)
-                    print(f"[>] Received command: {data}")
+                    logger.info("[>] Received command: %s", data)
                     await handle_request(data, websocket)
                 except json.JSONDecodeError:
                     await websocket.send(json.dumps({"status": "invalid_json"}))
                 except Exception as exc:
+                    logger.exception("Unhandled error during handling")
                     await websocket.send(json.dumps({
                         "status": "error",
-                        "error": str(exc)
+                        "code": "internal_error"
                     }))
         except websockets.exceptions.ConnectionClosed:
             pass
