@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clusnux Admin Console</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">Clusnux Control Plane</p>
+                <h1>Admin & Setup Console</h1>
+                <p class="subtitle">Run commands and monitor heartbeats over WebSocket. UI is available only for admin and setup.</p>
+            </div>
+            <div class="badge">WS Control</div>
+        </header>
+
+        <section class="card grid two">
+            <div>
+                <h2>Setup</h2>
+                <p>Select the role for this console and the WebSocket endpoint to reach your node or orchestrator.</p>
+                <label class="field">
+                    <span>Role</span>
+                    <select id="role">
+                        <option value="admin" selected>Admin</option>
+                        <option value="orchestrator">Orchestrator</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span>WebSocket URL</span>
+                    <input id="ws-url" type="text" value="ws://localhost:8734">
+                </label>
+                <button class="primary" id="connect-btn">Connect</button>
+                <p class="hint" id="status">Disconnected</p>
+            </div>
+            <div>
+                <h2>Heartbeat</h2>
+                <p>Send a lightweight heartbeat request to confirm connectivity and role recognition.</p>
+                <div class="inline">
+                    <button id="heartbeat-btn">Send heartbeat</button>
+                    <span class="pill" id="heartbeat-state">idle</span>
+                </div>
+                <pre class="output" id="heartbeat-output"></pre>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="title-row">
+                <div>
+                    <h2>Command Runner</h2>
+                    <p class="hint">Admin / orchestrator can run commands on connected node. Output is streamed below.</p>
+                </div>
+                <span class="pill success" id="role-pill">admin</span>
+            </div>
+            <label class="field">
+                <span>Command</span>
+                <input id="cmd-input" type="text" placeholder="e.g. uname -a">
+            </label>
+            <div class="inline">
+                <button class="primary" id="run-btn">Run command</button>
+                <button id="clear-output-btn">Clear output</button>
+            </div>
+            <pre class="output" id="cmd-output"></pre>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -121,7 +121,7 @@ All WS messages are JSON objects. Required fields must be validated before execu
 
 ## Practical guidance for reading/editing code and WS routes
 
-- WS entrypoints live in `cluster/network/websocket.py` (server) and `cluster/network/handling.py` (routing/handlers). The daemon thread is in `cluster/network/dameon.py`.
+- WS entrypoints live in `cluster/network/websocket.py` (server) and `cluster/network/handling.py` (routing/handlers). The daemon thread is in `cluster/network/daemon.py`.
 - When adding a route:
   1) Parse + validate JSON early.  
   2) Route by `task` string in `handling.py`.  
