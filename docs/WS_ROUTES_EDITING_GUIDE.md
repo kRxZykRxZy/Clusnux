@@ -37,6 +37,25 @@ This guide is focused on quickly helping contributors read and edit code routes 
 {"task":"metrics"}
 ```
 
+## Command contract quick reference
+
+- `cmd`: `{ "task": "cmd", "command": "echo hi", "cwd": "...", "env": {...} }`  
+  Emits `cmd_started` → multiple `cmd_output` → `cmd_complete` or `cmd_error`.
+- `metrics`: `{ "task": "metrics" }`  
+  Emits a single `metrics` payload (CPU/memory/disk/network).
+- `stop`: `{ "task": "stop", "pid": 1234 }`  
+  Emits `stop_ack` then `stop_result`.
+- `docker_run`: `{ "task": "docker_run", "image": "busybox", "command": "echo hi" }`  
+  Emits `docker_started` → `docker_output` → `docker_complete`/`docker_error`.
+- `tasks`: `{ "task": "tasks", "action": "list" }`  
+  Emits `tasks` or `task_info`.
+- `admin_control`: `{ "task": "admin_control", "action": "shutdown", "reason": "maint" }`  
+  Emits `admin_ack` + follow-up status event.
+- `heartbeat`: `{ "task": "heartbeat" }`  
+  Emits `heartbeat` with timestamp/node_id.
+- `logs`: `{ "task": "logs", "pid": 1234 }`  
+  Streams `log_line` and ends with `logs_complete`.
+
 ## Add a new route
 
 Edit `cluster/network/handling.py`:
@@ -45,21 +64,14 @@ Edit `cluster/network/handling.py`:
 elif task == "route_name":
     # 1) parse/validate fields from data
     # 2) execute action
-    # 3) send structured response
+    # 3) send structured response(s)
     await websocket.send(json.dumps({
         "task": "route_name",
         "status": "ok"
     }))
 ```
 
-## Recommended new route keys
-
-- `stop` (terminate by PID)
-- `docker_run` (container execution)
-- `tasks` (task module control)
-- `admin_control` (privileged operations)
-- `heartbeat` (node liveness)
-- `logs` (log retrieval)
+Keep responses consistent with the event naming conventions above. Update this guide and `docs/ARCHITECTURE_DESIGN.md` when adding new contracts.
 
 ## Safety checklist when editing routes
 

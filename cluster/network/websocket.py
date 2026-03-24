@@ -20,9 +20,14 @@ class server:
                 try:
                     data = json.loads(message)
                     print(f"[>] Received command: {data}")
-                    handle_request(data, websocket)
+                    await handle_request(data, websocket)
                 except json.JSONDecodeError:
                     await websocket.send(json.dumps({"status": "invalid_json"}))
+                except Exception as exc:
+                    await websocket.send(json.dumps({
+                        "status": "error",
+                        "error": str(exc)
+                    }))
         except websockets.exceptions.ConnectionClosed:
             pass
         finally:
@@ -32,7 +37,9 @@ class server:
     def run(self):
         """ Start the WebSocket server. """
         print(f"[*] Starting WebSocket server on {self.host}:{self.port}")
-        asyncio.get_event_loop().run_until_complete(
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(
             websockets.serve(self.handler, self.host, self.port)
         )
-        asyncio.get_event_loop().run_forever()
+        loop.run_forever()
