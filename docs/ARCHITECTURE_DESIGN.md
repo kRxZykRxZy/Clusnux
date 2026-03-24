@@ -24,7 +24,7 @@ This document provides a full **design blueprint** for evolving Clusnux into a P
 
 ## 2) Current Code Map (Repository Today)
 
-- `cluster/network/dameon.py`  
+- `cluster/network/dameon.py` *(current filename in repository; keep as-is unless file is renamed in code)*  
   Daemon wrapper that starts WebSocket worker thread.
 - `cluster/network/websocket.py`  
   WebSocket server class and inbound message handler.
@@ -86,11 +86,11 @@ This section is for maintainers who need to safely modify command routes.
 ### 4.1 Files to edit
 
 - WS transport and connection lifecycle:
-  - `/home/runner/work/Clusnux/Clusnux/cluster/network/websocket.py`
+  - `cluster/network/websocket.py`
 - Route dispatch and command logic:
-  - `/home/runner/work/Clusnux/Clusnux/cluster/network/handling.py`
+  - `cluster/network/handling.py`
 - Daemon bootstrap:
-  - `/home/runner/work/Clusnux/Clusnux/cluster/network/dameon.py`
+  - `cluster/network/dameon.py` *(current filename in repository; keep as-is unless file is renamed in code)*
 
 ### 4.2 How to add a new WebSocket route
 

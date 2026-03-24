@@ -4,9 +4,9 @@ This guide is focused on quickly helping contributors read and edit code routes 
 
 ## Active files
 
-- `/home/runner/work/Clusnux/Clusnux/cluster/network/websocket.py`
-- `/home/runner/work/Clusnux/Clusnux/cluster/network/handling.py`
-- `/home/runner/work/Clusnux/Clusnux/cluster/network/dameon.py`
+- `cluster/network/websocket.py`
+- `cluster/network/handling.py`
+- `cluster/network/dameon.py` *(current filename in repository; keep as-is unless file is renamed in code)*
 
 ## Current route behavior
 
@@ -39,7 +39,7 @@ This guide is focused on quickly helping contributors read and edit code routes 
 
 ## Add a new route
 
-Edit `/home/runner/work/Clusnux/Clusnux/cluster/network/handling.py`:
+Edit `cluster/network/handling.py`:
 
 ```python
 elif task == "route_name":
@@ -86,4 +86,3 @@ Because no test framework is currently configured in this repository, manually t
 3. Verify `cmd_started`, `cmd_output`, `cmd_complete`
 4. Send `{"task":"metrics"}`
 5. Verify metrics payload shape
-
