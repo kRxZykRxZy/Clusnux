@@ -26,11 +26,3 @@ class ClusterDaemon:
         self.ws_thread.daemon = True  # Stops automatically if main program exits
         self.ws_thread.start()
         print("[*] WebSocket server thread started as daemon.")
-
-        """ Main loop, handles all task handling middleware and heartbeats. """
-        try:
-            while True:
-                # TODO: Implement main loop
-                time.sleep(5)
-        except KeyboardInterrupt:
-            print("\n[*] Daemon shutting down...")
